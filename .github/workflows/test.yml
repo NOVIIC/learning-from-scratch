@@ -72,14 +72,3 @@ jobs:
               print('✗ 无法访问当前仓库')
           except Exception as e:
               print(f'✗ 访问当前仓库出错: {e}')
-
-          # 测试访问目标仓库
-          target_repo = 'owner/repository-name'  # 修改为你要访问的仓库
-          try:
-              repo = g.get_repo(target_repo)
-              print(f'✓ 成功访问目标仓库: {repo.full_name}')
-          except UnknownObjectException:
-              print(f'✗ 目标仓库不存在或无权限: {target_repo}')
-          except Exception as e:
-              print(f'✗ 访问目标仓库出错: {e}')
-          "
