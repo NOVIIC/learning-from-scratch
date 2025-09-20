@@ -1,0 +1,85 @@
+name: Repository Access Debug
+
+on:
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  debug-repo-access:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup debug environment
+        run: |
+          echo "=== 环境信息 ==="
+          echo "GITHUB_REPOSITORY: $GITHUB_REPOSITORY"
+          echo "GITHUB_ACTOR: $GITHUB_ACTOR"
+          echo "Runner workspace: $GITHUB_WORKSPACE"
+
+      - name: Verify repository existence via API
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          echo "=== API 验证 ==="
+          
+          # 验证当前仓库
+          echo "验证当前仓库: $GITHUB_REPOSITORY"
+          curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY" | jq '.name, .full_name, .private' || echo "API 调用失败"
+          
+      - name: Check token permissions
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "=== Token 权限验证 ==="
+          curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/user" | jq '.login, .type' || echo "无法获取用户信息"
+          
+          # 检查 token 的权限范围
+          curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/rate_limit" | jq '.resources.core' || echo "无法获取速率限制信息"
+
+      - name: Install dependencies and test Python access
+        run: pip install PyGithub requests
+
+      - name: Test Python script access
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 -c "
+          import os
+          from github import Github
+          from github.GithubException import UnknownObjectException
+
+          token = os.getenv('GITHUB_TOKEN')
+          if not token:
+              print('ERROR: GITHUB_TOKEN 未设置')
+              exit(1)
+
+          g = Github(token)
+          
+          # 测试访问当前仓库
+          try:
+              repo = g.get_repo(os.getenv('GITHUB_REPOSITORY'))
+              print(f'✓ 成功访问当前仓库: {repo.full_name}')
+              print(f'   私有状态: {repo.private}')
+              print(f'   权限: {repo.permissions}')
+          except UnknownObjectException:
+              print('✗ 无法访问当前仓库')
+          except Exception as e:
+              print(f'✗ 访问当前仓库出错: {e}')
+
+          # 测试访问目标仓库
+          target_repo = 'owner/repository-name'  # 修改为你要访问的仓库
+          try:
+              repo = g.get_repo(target_repo)
+              print(f'✓ 成功访问目标仓库: {repo.full_name}')
+          except UnknownObjectException:
+              print(f'✗ 目标仓库不存在或无权限: {target_repo}')
+          except Exception as e:
+              print(f'✗ 访问目标仓库出错: {e}')
+          "
