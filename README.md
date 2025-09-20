@@ -9,3 +9,7 @@
 
 **2025 秋冬季开源操作系统训练营**
 [2025\9\15](./src/diary/2025/9/15.md) - ???
+
+### Coding统计信息
+<!--START_SECTION:waka-->
+<!--END_SECTION:waka-->
