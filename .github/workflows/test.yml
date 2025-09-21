@@ -78,7 +78,7 @@ jobs:
               print('1 ')
               user = g.get_user()
               print('2 ')
-              remote_name = f'{user.login}/{user.login}'
+              remote_name = f'{user.login}/learning-from-scratch'
               print('3 ')
               remote = g.get_repo(remote_name)
               print('4 '+remote)
