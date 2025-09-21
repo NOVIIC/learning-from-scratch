@@ -75,11 +75,11 @@ jobs:
           
           try:
               print('测试')
-              print('1 '+g)
+              print('1 ')
               user = g.get_user()
-              print('2 '+user)
+              print('2 ')
               remote_name = f'{user.login}/{user.login}'
-              print('3 '+remote_name)
+              print('3 ')
               remote = g.get_repo(remote_name)
               print('4 '+remote)
           except Exception as e:
